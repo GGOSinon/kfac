@@ -59,8 +59,8 @@ class KfacOptimizer(tf.train.GradientDescentOptimizer):
           initializing damping variable.
           (Higher damping means the update looks more like a standard gradient
           update - see Tikhonov regularization.)
-      layer_collection: The layer collection object, which holds the fisher
-          blocks, kronecker factors, and losses associated with the
+      layer_collection: The layer collection object, which holds the Fisher
+          blocks, Kronecker factors, and losses associated with the
           graph.  The layer_collection cannot be modified after KfacOptimizer's
           initialization.
       cov_ema_decay: (Optional) The decay factor used when calculating the
@@ -467,8 +467,10 @@ class KfacOptimizer(tf.train.GradientDescentOptimizer):
                     = qmodel(alpha*precon_grad + mu*prev_update) - L(theta).
     """
 
-    cmvpc = cmvp.CurvatureMatrixVectorProductComputer(self.layers.losses,
-                                                      variables)
+    cmvpc = cmvp.CurvatureMatrixVectorProductComputer(
+        self.layers,
+        variables,
+        colocate_gradients_with_ops=self._colocate_gradients_with_ops)
 
     # compute the matrix-vector products with the transposed Fisher factor
     fft_precon_grads = cmvpc.multiply_fisher_factor_transpose(precon_grads)
